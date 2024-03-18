@@ -39,8 +39,8 @@ source("requirements.R")
 
 # Lectura ----------------------------------------------------------------------
 # Leer las bases usando rio::import
-registro_civil_original <- rio::import("./data/uruguay/Registro civil - Uruguay.csv")
-rnve_original <- rio::import("./data/uruguay/RNVE - Uruguay.csv")
+registro_civil_original <- rio::import("./data/registro_civil.csv")
+rnve_original <- rio::import("./data/RNVE.csv")
 # Filtremos el registro civil hasta el año pasado y el RNVe hasta el día
 # de hoy.
 registro_civil <- registro_civil_original %>%
