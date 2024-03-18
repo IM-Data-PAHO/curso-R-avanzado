@@ -50,3 +50,4 @@ rsconnect/
 # Local Settings
 local_settings.R
 
+*.csv
