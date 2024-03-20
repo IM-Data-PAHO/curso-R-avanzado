@@ -24,7 +24,8 @@ pacman::p_load(
   # reclin2,
   sf,
   readr,
-  cleaner
+  cleaner,
+  plotly
 )
 
 
