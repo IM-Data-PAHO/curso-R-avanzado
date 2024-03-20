@@ -523,7 +523,7 @@ fecha_campana
 # Calculamos la fecha de nacimiento que corresponde a la edad mínima (13 meses)
 # NOTA: El operador %m-% es un operador especial de lubridate que permite
 #       realizar la resta de dos fechas en términos de meses.
-fecha_edad_minima <- fecha_campana %m-% months(13)
+fecha_edad_minima <- fecha_campana %m-% months(12)
 fecha_edad_minima
 # Calculamos la fecha de nacimiento que corresponde a la edad máxima (menos
 # de 5 años)
@@ -626,7 +626,7 @@ campana_nacional <- rnve_original %>%
   mutate(cobertura_acumulada = cumsum(cobertura))
 head(campana_nacional)
 ### Gráfica --------------------------------------------------------------------
-ggplot(
+p <- ggplot(
   campana_nacional,
   aes(x = fecha_vac)
 ) +
@@ -643,6 +643,7 @@ ggplot(
   scale_y_continuous(
     # Ajustamos los limites entre 0 y 1,000 dosis
     limits = c(0, 7500),
+    expand = expansion(c(0, 0.1)),
     # Agregamos un segundo eje horizontal
     # NOTA: Aplicamos un factor de conversión de 75 para que el eje de cobertura
     #       alcance 100% cuando el número de dosis alcance 7,500 dosis.
@@ -651,3 +652,30 @@ ggplot(
   # Mejoramos la visualización
   theme_classic() +
   theme(text = element_text(size = 16))
+# Creamos la versión interactiva
+ggplotly(p) %>% 
+  # Debemos agregar el segundo eje de nuevo, esta vez manualmente,
+  # mediante la función add_lines de plotly
+  add_lines(
+    x = ~fecha_vac, y = ~cobertura_acumulada, data = campana_nacional,
+    yaxis = "y2"
+  ) %>% 
+  # hacemos algunas configuraciones al eje y secundario y a los márgenes,
+  # para que nuestra gráfica se vea bien
+  layout(
+    # configuraciones al nuevo eje vertical
+    yaxis2 = list(
+      tickfont = list(size = 16),
+      titlefont = list(size = 18),
+      overlaying = "y",
+      nticks = 10,
+      side = "right",
+      title = "Cobertura (%)",
+      # limitamos el eje entre 0 y 100%
+      range = c(0,100),
+      showline = TRUE
+    ),
+    # agregamos un poco de margen a la derecha para que quepa el nuevo eje
+    # vertical
+    margin = list(r = 100)
+  )
