@@ -166,10 +166,10 @@ resumen_local <- collect(resumen_dosis_muni_online2)
 # esto nos evita las conversiones de tipos de datos equivalentes como tibble, 
 # data.table y otros.
 
-offline_done <- function(){
+offline_done_CSV <- function(){
   
-  rnve <- read.csv("")
-  registro_civil <- dbReadTable(con,"registro-civil")
+  rnve <- read.csv("data/RNVE.csv")
+  registro_civil <- read.csv("data/registro_civil.csv")
   
   resumen_dosis_muni <- rnve %>% 
     filter(dosis == "Primera") %>% 
@@ -193,6 +193,9 @@ offline_done <- function(){
 } 
 
 online_done <- function(){
+  rnve_online <- tbl(con, "rnve")
+  registro_civil_online <- tbl(con,"registro-civil")
+  
   registro_civil_resumido  <- registro_civil_online %>% 
     select(ID, cod_departamento, departamento_res_mad) %>% 
     collapse()
@@ -213,7 +216,7 @@ online_done <- function(){
 # esto ejecuta las funciones un par de veces y devuelve el resultado de cuanto
 # tiempo le toma ejecutarlo
 
-bnch <- bench::mark(offline_done(),online_done())
+bnch <- bench::mark(offline_done(),online_done(), offline_done_CSV())
 
 # Visualizamos el resultado como tabla
 bnch
