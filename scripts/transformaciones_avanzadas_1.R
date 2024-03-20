@@ -236,13 +236,14 @@ dosis_mensual <- rnve %>%
   mutate(fecha = lubridate::ym(
     stringr::str_glue("{ano}-{mes}")
   ))
+head(dosis_mensual)
 ## Agrupación semanal ----------------------------------------------------------
 dosis_semanal <- rnve %>% 
   # Calculamos el año y la semana epidemiológica de cada acto de vacunación
   #   1. La función isoweek() de lubridate es equivalente al sistema
   #   ISO 8601, que también corresponde a una semana epidemiológica que inicia
   #   en Lunes.
-  mutate(ano = year(fecha_vac), semana_epi = lubridate::isoweek(fecha_vac)) %>% 
+  mutate(ano = year(fecha_vac), semana_epi = lubridate::epiweek(fecha_vac)) %>% 
   # Agrupamos para cada año, semana y dosis, y contamos cuántas vacunaciones
   # hubo en el grupo.
   group_by(ano, semana_epi, dosis) %>% 
@@ -255,6 +256,7 @@ dosis_semanal <- rnve %>%
   mutate(fecha = aweek::get_date(
     week = semana_epi, year = ano, day = 1, start = "Monday"
   ))
+tail(dosis_semanal)
 ## Visualizando los resultados -------------------------------------------------
 ### Mensual --------------------------------------------------------------------
 ggplot(
@@ -275,7 +277,8 @@ ggplot(
 # cada mes. ¿Cómo lo hacemos?
 #
 ## Cálculo ---------------------------------------------------------------------
-cobertura_mensual <- dosis_mensual %>% 
+# Calculamos el incremento de cobertura para cada mes
+cobertura_mensual_1 <- dosis_mensual %>% 
   # Para calcular cobertura, necesitamos la población. Por lo tanto,
   # agregamos la población a la base de dosis mensuales.
   # Para esto usamos pop_LT1_rn, una tabla de población por año que calculamos
@@ -283,7 +286,9 @@ cobertura_mensual <- dosis_mensual %>%
   left_join(pop_LT1_rn, by = "ano") %>% 
   # Calculamos la cobertura para cada fila (es decir, para cada mes)
   group_by(ano, mes, dosis) %>% 
-  mutate(cobertura_mes = round(n_dosis / n * 100, 2)) %>% 
+  mutate(cobertura_mes = round(n_dosis / n * 100, 2))
+# Calculamos la cobertura acumulada para cada mes
+cobertura_mensual <- cobertura_mensual_1 %>% 
   # Calculamos la cobertura acumulada para cada mes
   group_by(ano, dosis) %>% 
   mutate(cobertura = cumsum(cobertura_mes))
@@ -627,7 +632,7 @@ ggplot(
   # Modificamos el eje vertical
   scale_y_continuous(
     # Ajustamos los limites entre 0 y 1,000 dosis
-    limits = c(0, 5000),
+    limits = c(0, 7500),
     # Agregamos un segundo eje horizontal
     # NOTA: Aplicamos un factor de conversión de 50 para que el eje de cobertura
     #       alcance 100% cuando el número de dosis alcance 5,000 dosis.
